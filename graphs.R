@@ -6,7 +6,7 @@ library(viridis)
 
 # Gene with SNPs
 
-df <- read_table("D:/서준서/OneDrive - 숭실대학교 - Soongsil University/3rd/2nd_semester/BS_exp/Results/LRP8/LRP8.chr1.sorted.filter0.00005")
+df <- read_table("D:/private/BS_exp/Results/LRP8/LRP8.chr1.sorted.filter0.00005")
 df <- df %>%
   mutate(REGULATE = case_when(BETA > 0 ~ 'UP', BETA < 0 ~ 'DOWN'))
 
@@ -30,7 +30,7 @@ ggplot(data=df, aes(CHR,P)) + ggtitle("LRP8 related SNPs", ) + xlab("Chromosome"
 
 library(ggrepel)
 
-df <- read.csv("D:/서준서/OneDrive - 숭실대학교 - Soongsil University/3rd/2nd_semester/BS_exp/Results/SNPs/rs12136984.csv")
+df <- read.csv("D:/private/BS_exp/Results/SNPs/rs12136984.csv")
 df <- df[,-11]
 
 df$X <- gsub(".assoc.linear", "", df$X)
