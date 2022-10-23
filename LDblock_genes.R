@@ -2,6 +2,7 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(viridis)
+library(pheatmap)
 
 # Load association file between LD block SNPs and a gene
 
@@ -17,17 +18,19 @@ THUMPD1_block2 <-  read_table("THUMPD1_chr16_block2.assoc.linear")
 dfs <- Filter(function(x) is(x, "data.frame"), mget(ls()))
 
 mergelist(dfs)
-
+Gene_Snp_Heatmap(LDblockdf)
 
 
 ## Method 2 - if assoc.linear files in one directory
 
 filelist = list.files(path = getwd(), pattern = "assoc.linear")
 datalist = lapply(filelist, function(x)read_table(x)) 
-names(datalist) <- str_remove_all(filelist, paste(c("chr16_",".assoc.linear"), collapse = "|"))
+names(datalist) <- str_remove_all(filelist, paste(c("chr1_",".assoc.linear"), collapse = "|"))
 
 mergelist(datalist)
 
+LDblockdf <- arrange(LDblockdf, BP)
+Gene_Snp_Heatmap(LDblockdf, "Chr1")
 
 
 ## Function 1 - merge list to dataframe ##
@@ -46,7 +49,60 @@ mergelist <- function(dflist) {
 
 ## Function 2 - make a heatmap between genes and SNPs
 
+# Make matrix
+mat <- with(LDblockdf, tapply(P, list(SNP, GENE), FUN = print))
+mat[is.na(mat)] <- 1
+
+# Heatmap with ggplot
+
+Gene_Snp_Heatmap <- function(df, title = "Title") {
+  p1 <- ggplot(df, aes(x=fct_inorder(SNP), y=GENE, fill=STAT, order=BP)) + geom_tile() + ggtitle(paste(title)) +
+    scale_fill_viridis(direction = 1, guide = guide_colorbar(barheight = 10, barwidth = 2)) + 
+    xlab('SNP') + ylab('GENE') +
+    facet_grid(~BLOCK, scales="free_x", space = "free_x") +
+    theme(axis.text.x = element_text(angle = 90, size = 10),
+          plot.title = element_text(size = 50, hjust = 0.5),
+          axis.text.y = element_text(size = 20),
+          axis.title = element_text(size=30),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.spacing = unit(0.1, units = 'cm'),
+          panel.background = element_rect(fill='white'),
+          strip.background.x = element_rect(fill = c("grey")),
+          strip.text = element_text(size = 10, lineheight = 0.2)) 
+  
+  ggplotColours <- function(n = 6, h = c(0, 360) + 15){
+    if ((diff(h) %% 360) < 1) h[2] <- h[2] - 360/n
+    hcl(h = (seq(h[1], h[2], length = n)), c = 100, l = 65)
+  }
+  
+  color_list <- ggplotColours(n=length(levels(factor(df$BLOCK))))
+  
+  
+  g <- ggplot_gtable(ggplot_build(p1))
+  stripr <- which(grepl('strip-t', g$layout$name))
+  k <- 1
+  for (i in stripr) {
+    j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+    g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- color_list[k]
+    k <- k+1
+  }
+  grid::grid.draw(g)
+}
 
 
 
+ggplot(LDblockdf, aes(x=fct_inorder(SNP), y=GENE, fill=STAT, order=BP)) + geom_tile() + ggtitle("test") +
+  scale_fill_viridis(direction = 1, guide = guide_colorbar(barheight = 10, barwidth = 4)) + xlab('SNP') + ylab('GENE') +
+  facet_grid(~BLOCK, scales="free_x", space = "free_x") +
+  theme(axis.text.x = element_text(angle = 90, size = 10),
+        plot.title = element_text(size = 50, hjust = 0.5),
+        axis.text.y = element_text(size = 20),
+        axis.title = element_text(size=30),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.spacing = unit(0.1, units = 'cm'),
+        panel.background = element_rect(fill='white'),
+        strip.background.x = element_rect(fill = c("grey")),
+        strip.text = element_text(size = 10, lineheight = 0.2)) 
 
