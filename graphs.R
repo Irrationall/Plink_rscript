@@ -6,19 +6,19 @@ library(viridis)
 
 # Gene with SNPs
 
-df <- read_table("D:/private/BS_exp/Results/LRP8/LRP8.chr1.sorted.filter0.00005")
+df <- read_table("FKBP5.sorted.pval0.000005")
 df <- df %>%
   mutate(REGULATE = case_when(BETA > 0 ~ 'UP', BETA < 0 ~ 'DOWN'))
 
-ggplot(data=df, aes(CHR,P)) + ggtitle("LRP8 related SNPs", ) + xlab("Chromosome") + ylab("P value") +
+ggplot(data=df, aes(CHR,P)) + ggtitle("FKBP5 related SNPs", ) + xlab("Chromosome") + ylab("P value") +
   geom_point(aes( fill=BETA, shape=REGULATE), size=10, color='black') +
   scale_shape_manual(values = c("UP" = 24, "DOWN" = 25)) +
-  scale_fill_viridis(aesthetics = "fill") +
-  scale_x_discrete(limits=c(1:21)) +
+  scale_fill_viridis(aesthetics = "fill",guide = guide_colorbar(barheight = 10, barwidth = 2)) +
+  scale_x_discrete(limits=c(1:22)) +
   scale_y_reverse() +
   theme(plot.title = element_text(size = 50, hjust = 0.5, face = "bold"),
         axis.title.x = element_text(size=30),
-        axis.text.x = element_text(size = 20, angle = 45),
+        axis.text.x = element_text(size = 20, angle = 0),
         axis.title.y = element_text(size = 30),
         axis.text.y = element_text(size=20),
         panel.background = element_rect(fill = 'white', color = 'grey'),
