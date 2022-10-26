@@ -27,42 +27,48 @@ Gene_Snp_Heatmap(LDblockdf)
 filelist = list.files(path = getwd(), pattern = "assoc.linear")
 datalist = lapply(filelist, function(x)read_table(x)) 
 names(datalist) <- str_remove_all(filelist, paste(c("chr16_",".assoc.linear"), collapse = "|"))
+names(datalist) <- str_remove_all(filelist, paste(c("chr10.",".assoc.linear"), collapse = "|")) # --all-pheno
 
-chr16_LDblock <- mergelist(datalist)
+chr10_LDblock <- mergelist(datalist)
+chr10_LDblock <- mergelist(datalist, div = c("BLOCK","GENE"), sep="\\.") # --all-pheno
 
-LDblockdf <- arrange(chr16_LDblock, BP)
+chr10_LDblock <- arrange(chr10_LDblock, BP)
 
-LDblockdf <- LDblockdf %>% mutate(LOGP = -log10(P))
+chr10_LDblock <- chr10_LDblock %>% mutate(LOGP = -log10(P)) # if you want to get -log10(pvalue)
 
-Gene_Snp_Heatmap(chr16_LDblock, "Chr16")
+sig <- subset(chr21_LDblock, P < 0.05)
+
+Gene_Snp_Heatmap(chr10_LDblock, "Chr10", Pvalscale = c(0,0.05,0.3,1), gene_symbol_size = 10)
 
 
 #### Function 1 - merge list to dataframe ####
 
-mergelist <- function(dflist) {
+mergelist <- function(dflist, div=c("GENE","BLOCK"), sep = "_") {
   for (i in 1:length(dflist)) {
     dflist[[i]]$X10 <- names(dflist[i])
-    dflist[[i]] <- dflist[[i]] %>% separate(X10, c("GENE","BLOCK"), sep = "_")
+    dflist[[i]] <- dflist[[i]] %>% separate(X10, div, sep = sep)
   }
   LDblockdf <- do.call(rbind, dflist)
   rownames(LDblockdf) <- NULL
   return(LDblockdf)
 }
+
 ####--------------------------------------####
 
+#g-20, s-10
 
 #### Function 2 - make a heatmap between genes and SNPs ####
 
 # Heatmap with ggplot
 
-Gene_Snp_Heatmap <- function(df, title = "Title") {
+Gene_Snp_Heatmap <- function(df, title = "Title", Pvalscale=c(0,0.1,1), snp_id_size=10, gene_symbol_size=20) {
   p1 <- ggplot(df, aes(x=fct_inorder(SNP), y=GENE, fill=P, order=BP)) + geom_tile() + ggtitle(paste(title)) +
-    scale_fill_viridis(values=scales::rescale(c(0,0.1,1)),direction = -1, guide = guide_colorbar(barheight = 10, barwidth = 2)) + 
+    scale_fill_viridis(values=scales::rescale(Pvalscale),direction = -1, guide = guide_colorbar(barheight = 10, barwidth = 2)) + 
     xlab('SNP') + ylab('GENE') +
     facet_grid(~BLOCK, scales="free_x", space = "free_x") +
-    theme(axis.text.x = element_text(angle = 90, size = 10),
+    theme(axis.text.x = element_text(angle = 90, size = snp_id_size),
           plot.title = element_text(size = 50, hjust = 0.5),
-          axis.text.y = element_text(size = 20),
+          axis.text.y = element_text(size = gene_symbol_size),
           axis.title = element_text(size=30),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -88,7 +94,10 @@ Gene_Snp_Heatmap <- function(df, title = "Title") {
   }
   grid::grid.draw(g)
 }
+
 ####----------------------------------------------------####
+
+
 
 # For quick test of plot
 
