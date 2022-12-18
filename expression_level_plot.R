@@ -3,7 +3,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 
-mRNA <- read.table('EXOSC10_expression.ped')
+mRNA <- read.table('rs12757060_EXOSC10.ped')
 names(mRNA) <- c('FID','IID','PID','MID','Sex','P','A1','A2')
 mRNA <- mRNA[mRNA$P>=0,]
 data <- mRNA %>% select(P)
@@ -14,7 +14,7 @@ xlab("Minor Allele")
 ylab('Expression Level')
 
 
-origin <- read.table('LRP8_expression.ped')
+origin <- read.table('rs12757060_LRP8.ped')
 names(origin) <- c('FID','IID','PID','MID','Sex','P','A1','A2')
 origin <- origin[origin$P>=0,]
 data2 <- origin %>% select(P)
