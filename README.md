@@ -23,3 +23,7 @@ awk '$9 < 0.05 {print $0}' ./Results/[results-filename] | sort -k9 -g > output_f
 ```
 plink --bfile [genotype-filename] --extract [SNP-list-file] --recode HV --out [directory/filename]
 ```
+- Make ped for boxplot
+```
+plink —bfile [filename] --snps [snp] --recode —pheno [chr] --pheno-name [gene] --out [filename]
+```
